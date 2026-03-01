@@ -1,0 +1,4 @@
+node_modules
+credentials.json
+gverse-backend/credentials.json
+.env
