@@ -5,19 +5,13 @@ const { google } = require("googleapis");
 
 const app = express();
 
-/* ===============================
-   MIDDLEWARE
-================================= */
 
 app.use(cors({
-  origin: "*", // change to frontend domain in production
+  origin: "*", 
 }));
 
 app.use(express.json());
 
-/* ===============================
-   GOOGLE AUTH CONFIG
-================================= */
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
@@ -33,15 +27,12 @@ const auth = new google.auth.GoogleAuth({
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 
-/* ===============================
-   STUDENT API
-================================= */
 
 app.post("/students", async (req, res) => {
   try {
-    const { name, dept, mobile, email, address, feedback } = req.body;
+    const { name, degree,dept, regno,mobile, email, address, feedback } = req.body;
 
-    if (!name || !dept || !mobile || !email) {
+    if (!name || !degree || !dept || !regno || !mobile || !email) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -50,13 +41,15 @@ app.post("/students", async (req, res) => {
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: "Students!A:H",
+      range: "Students!A:J",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [
           [
             name,
+            degree,
             dept,
+            regno,
             "Final Year",
             mobile,
             email,
@@ -76,61 +69,52 @@ app.post("/students", async (req, res) => {
   }
 });
 
-/* ===============================
-   ALUMNI API
-================================= */
 
-app.post("/alumni", async (req, res) => {
-  try {
-    const { name, batch, dept, company, role, mobile, email, feedback } = req.body;
+// app.post("/alumni", async (req, res) => {
+//   try {
+//     const { name, batch, dept, company, role, mobile, email, feedback } = req.body;
 
-    if (!name || !batch || !dept || !mobile || !email) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+//     if (!name || !batch || !dept || !mobile || !email) {
+//       return res.status(400).json({ error: "Missing required fields" });
+//     }
 
-    const client = await auth.getClient();
-    const sheets = google.sheets({ version: "v4", auth: client });
+//     const client = await auth.getClient();
+//     const sheets = google.sheets({ version: "v4", auth: client });
 
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
-      range: "Alumni!A:I",
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [
-          [
-            name,
-            batch,
-            dept,
-            company || "",
-            role || "",
-            mobile,
-            email,
-            feedback || "",
-            new Date().toLocaleString("en-IN"),
-          ],
-        ],
-      },
-    });
+//     await sheets.spreadsheets.values.append({
+//       spreadsheetId: SPREADSHEET_ID,
+//       range: "Alumni!A:I",
+//       valueInputOption: "USER_ENTERED",
+//       requestBody: {
+//         values: [
+//           [
+//             name,
+//             batch,
+//             dept,
+//             company || "",
+//             role || "",
+//             mobile,
+//             email,
+//             feedback || "",
+//             new Date().toLocaleString("en-IN"),
+//           ],
+//         ],
+//       },
+//     });
 
-    res.json({ success: true, message: "Alumni saved successfully" });
+//     res.json({ success: true, message: "Alumni saved successfully" });
 
-  } catch (error) {
-    console.error("Alumni Error:", error);
-    res.status(500).json({ error: "Error saving alumni" });
-  }
-});
+//   } catch (error) {
+//     console.error("Alumni Error:", error);
+//     res.status(500).json({ error: "Error saving alumni" });
+//   }
+// });
 
-/* ===============================
-   HEALTH CHECK
-================================= */
 
 app.get("/", (req, res) => {
   res.send("🚀 Google Sheets Backend Running");
 });
 
-/* ===============================
-   SERVER START
-================================= */
 
 const PORT = process.env.PORT || 5000;
 
